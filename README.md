@@ -1,2 +1,2 @@
 # aws-agg-app
-Agg-=related app functionality
+Agg-related app functionality
