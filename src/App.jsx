@@ -60,6 +60,7 @@ export default function App() {
       name: form.get("name"),
       description: form.get("description"),
       image: form.get("image").name,
+      value: form.get("value"),
     });
 
     console.log(newNote);
@@ -123,6 +124,14 @@ export default function App() {
                 variation="quiet"
                 required
               />
+              <TextField
+                name="value"
+                placeholder="Note Value"
+                label="Note Value"
+                labelHidden
+                variation="quiet"
+                required
+              />
               <View
                 name="image"
                 as="input"
@@ -161,6 +170,7 @@ export default function App() {
                   <Heading level="3">{note.name}</Heading>
                 </View>
                 <Text fontStyle="italic">{note.description}</Text>
+                <Text fontStyle="italic">{note.value}</Text>
                 {note.image && (
                   <Image
                     src={note.image}
