@@ -29,31 +29,30 @@ const client = generateClient({
 });
 
 export default function App() {
-  const [notes, setNotes] = useState([]);
   const [sensorReadings, setSensorReadings] = useState([]);
 
   useEffect(() => {
-    fetchNotes();
+    // fetchNotes();
     fetchSensorReadings();
   }, []);
 
-  async function fetchNotes() {
-    const { data: notes } = await client.models.Note.list();
-    await Promise.all(
-      notes.map(async (note) => {
-        if (note.image) {
-          const linkToStorageFile = await getUrl({
-            path: ({ identityId }) => `media/${identityId}/${note.image}`,
-          });
-          console.log(linkToStorageFile.url);
-          note.image = linkToStorageFile.url;
-        }
-        return note;
-      })
-    );
-    console.log(notes);
-    setNotes(notes);
-  }
+  // async function fetchNotes() {
+  //   const { data: notes } = await client.models.Note.list();
+  //   await Promise.all(
+  //     notes.map(async (note) => {
+  //       if (note.image) {
+  //         const linkToStorageFile = await getUrl({
+  //           path: ({ identityId }) => `media/${identityId}/${note.image}`,
+  //         });
+  //         console.log(linkToStorageFile.url);
+  //         note.image = linkToStorageFile.url;
+  //       }
+  //       return note;
+  //     })
+  //   );
+  //   console.log(notes);
+  //   setNotes(notes);
+  // }
 
   async function fetchSensorReadings() {
     const { data: sensorReadings } = await client.models.SensorReading.list();
@@ -73,50 +72,47 @@ export default function App() {
     setSensorReadings(sensorReadings);
   }
 
-  async function createNote(event) {
-    event.preventDefault();
-    const form = new FormData(event.target);
-    console.log(form.get("image").name);
+  // async function createNote(event) {
+  //   event.preventDefault();
+  //   const form = new FormData(event.target);
+  //   console.log(form.get("image").name);
 
-    const { data: newNote } = await client.models.Note.create({
-      name: form.get("name"),
-      description: form.get("description"),
-      image: form.get("image").name,
-      value: form.get("value"),
-    });
+  //   const { data: newNote } = await client.models.Note.create({
+  //     name: form.get("name"),
+  //     description: form.get("description"),
+  //     image: form.get("image").name,
+  //     value: form.get("value"),
+  //   });
 
-    console.log(newNote);
-    if (newNote.image)
-      if (newNote.image)
-        await uploadData({
-          path: ({ identityId }) => `media/${identityId}/${newNote.image}`,
+  //   console.log(newNote);
+  //   if (newNote.image)
+  //     if (newNote.image)
+  //       await uploadData({
+  //         path: ({ identityId }) => `media/${identityId}/${newNote.image}`,
 
-          data: form.get("image"),
-        }).result;
+  //         data: form.get("image"),
+  //       }).result;
 
-    fetchNotes();
-    event.target.reset();
-  }
+  //   fetchNotes();
+  //   event.target.reset();
+  // }
 
   async function createSensorReading(event) {
     event.preventDefault();
     const form = new FormData(event.target);
+    console.log("Form:");
+    console.log(form.forEach((value, key, parent) => {
+      console.log(key, value);
+    }));
 
     const { data: newSensorReading } = await client.models.SensorReading.create({
-      sensorGroup: form.get("sensorGroup"),
-      sensorNumber: form.get("sensorNumber"),
-      value: form.get("value"),
+      sensorGroup: Number.parseInt(form.get("sensorGroup")),
+      sensorNumber: Number.parseInt(form.get("sensorNumber")),
+      value: Number.parseFloat(form.get("value")),
       time: new Date().toISOString(),
     });
 
     console.log(newSensorReading);
-    if (newSensorReading.image)
-      if (newSensorReading.image)
-        await uploadData({
-          path: ({ identityId }) => `media/${identityId}/${newSensorReading.image}`,
-
-          data: form.get("image"),
-        }).result;
 
     fetchSensorReadings();
     event.target.reset();
@@ -177,10 +173,10 @@ export default function App() {
                 <Label htmlFor="Default">Sensor Group</Label>
                 <Input
                   type="number"
-                  name="SensorGroup"
+                  name="sensorGroup"
                   placeholder="Sensor Group"
                   label="Sensor Group"
-                  labelHidden
+
                   // variation="quiet"
                   required
                 />
@@ -194,10 +190,9 @@ export default function App() {
                 <Label htmlFor="Default">Sensor Number</Label>
                 <Input
                   type="number"
-                  name="SensorNumber"
+                  name="sensorNumber"
                   placeholder="Sensor Number"
                   label="Sensor Number"
-                  labelHidden
                   // variation="quiet"
                   required
                 />
@@ -211,10 +206,9 @@ export default function App() {
                 <Label htmlFor="Default">Value</Label>
                 <Input
                   type="number"
-                  name="Value"
+                  name="value"
                   placeholder="Value"
                   label="Sensor Number"
-                  labelHidden
                   // variation="quiet"
                   required
                 />
