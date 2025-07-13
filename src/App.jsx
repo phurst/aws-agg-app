@@ -5,7 +5,9 @@ import {
   Text,
   TextField,
   Heading,
+  Input,
   Flex,
+  Label,
   View,
   Image,
   Grid,
@@ -28,9 +30,11 @@ const client = generateClient({
 
 export default function App() {
   const [notes, setNotes] = useState([]);
+  const [sensorReadings, setSensorReadings] = useState([]);
 
   useEffect(() => {
     fetchNotes();
+    fetchSensorReadings();
   }, []);
 
   async function fetchNotes() {
@@ -49,6 +53,24 @@ export default function App() {
     );
     console.log(notes);
     setNotes(notes);
+  }
+
+  async function fetchSensorReadings() {
+    const { data: sensorReadings } = await client.models.SensorReading.list();
+    await Promise.all(
+      sensorReadings.map(async (sensorReading) => {
+        // if (note.image) {
+        //   const linkToStorageFile = await getUrl({
+        //     path: ({ identityId }) => `media/${identityId}/${note.image}`,
+        //   });
+        //   console.log(linkToStorageFile.url);
+        //   note.image = linkToStorageFile.url;
+        // }
+        return sensorReading;
+      })
+    );
+    console.log(sensorReadings);
+    setSensorReadings(sensorReadings);
   }
 
   async function createNote(event) {
@@ -76,6 +98,30 @@ export default function App() {
     event.target.reset();
   }
 
+  async function createSensorReading(event) {
+    event.preventDefault();
+    const form = new FormData(event.target);
+
+    const { data: newSensorReading } = await client.models.SensorReading.create({
+      sensorGroup: form.get("sensorGroup"),
+      sensorNumber: form.get("sensorNumber"),
+      value: form.get("value"),
+      time: new Date().toISOString(),
+    });
+
+    console.log(newSensorReading);
+    if (newSensorReading.image)
+      if (newSensorReading.image)
+        await uploadData({
+          path: ({ identityId }) => `media/${identityId}/${newSensorReading.image}`,
+
+          data: form.get("image"),
+        }).result;
+
+    fetchSensorReadings();
+    event.target.reset();
+  }
+
   async function deleteNote({ id }) {
     const toBeDeletedNote = {
       id: id,
@@ -89,6 +135,19 @@ export default function App() {
     fetchNotes();
   }
 
+  async function deleteSensorReading({ id }) {
+    const toBeDeletedSensorReading = {
+      id: id,
+    };
+
+    const { data: deletedSensorReading } = await client.models.SensorReading.delete(
+      toBeDeletedSensorReading
+    );
+    console.log(deletedSensorReading);
+
+    fetchSensorReadings();
+  }
+
   return (
     <Authenticator>
       {({ signOut }) => (
@@ -100,53 +159,75 @@ export default function App() {
           width="70%"
           margin="0 auto"
         >
-          <Heading level={1}>My Notes App</Heading>
-          <View as="form" margin="3rem 0" onSubmit={createNote}>
+
+          <Heading level={1}>Sensor Readings App</Heading>
+          <View as="form" margin="0.2rem 0" onSubmit={createSensorReading}>
             <Flex
               direction="column"
               justifyContent="center"
-              gap="2rem"
-              padding="2rem"
+              gap="1rem"
+              padding="0.2rem"
             >
-              <TextField
-                name="name"
-                placeholder="Note Name"
-                label="Note Name"
-                labelHidden
-                variation="quiet"
-                required
-              />
-              <TextField
-                name="description"
-                placeholder="Note Description"
-                label="Note Description"
-                labelHidden
-                variation="quiet"
-                required
-              />
-              <TextField
-                name="value"
-                placeholder="Note Value"
-                label="Note Value"
-                labelHidden
-                variation="quiet"
-                required
-              />
-              <View
-                name="image"
-                as="input"
-                type="file"
-                alignSelf={"end"}
-                accept="image/png, image/jpeg"
-              />
+              <Flex
+                direction="column"
+                justifyContent="center"
+                gap="0rem"
+                padding="0rem"
+              >
+                <Label htmlFor="Default">Sensor Group</Label>
+                <Input
+                  type="number"
+                  name="SensorGroup"
+                  placeholder="Sensor Group"
+                  label="Sensor Group"
+                  labelHidden
+                  // variation="quiet"
+                  required
+                />
+              </Flex>
+              <Flex
+                direction="column"
+                justifyContent="center"
+                gap="0rem"
+                padding="0rem"
+              >
+                <Label htmlFor="Default">Sensor Number</Label>
+                <Input
+                  type="number"
+                  name="SensorNumber"
+                  placeholder="Sensor Number"
+                  label="Sensor Number"
+                  labelHidden
+                  // variation="quiet"
+                  required
+                />
+              </Flex>
+              <Flex
+                direction="column"
+                justifyContent="center"
+                gap="0rem"
+                padding="0rem"
+              >
+                <Label htmlFor="Default">Value</Label>
+                <Input
+                  type="number"
+                  name="Value"
+                  placeholder="Value"
+                  label="Sensor Number"
+                  labelHidden
+                  // variation="quiet"
+                  required
+                />
+              </Flex>
 
               <Button type="submit" variation="primary">
-                Create Note
+                Add Sensor Reading
               </Button>
             </Flex>
           </View>
+
           <Divider />
-          <Heading level={2}>Current Notes</Heading>
+          <Heading level={2}>Current Sensor Readings</Heading>
           <Grid
             margin="3rem 0"
             autoFlow="column"
@@ -154,9 +235,9 @@ export default function App() {
             gap="2rem"
             alignContent="center"
           >
-            {notes.map((note) => (
+            {sensorReadings.map((sensorReading) => (
               <Flex
-                key={note.id || note.name}
+                key={sensorReading.id || sensorReading.sensorNumber}
                 direction="column"
                 justifyContent="center"
                 alignItems="center"
@@ -167,10 +248,13 @@ export default function App() {
                 className="box"
               >
                 <View>
-                  <Heading level="3">{note.name}</Heading>
+                  <Heading level="3">{sensorReading.sensorNumber}</Heading>
                 </View>
-                <Text fontStyle="italic">{note.description}</Text>
-                <Text fontStyle="italic">{note.value}</Text>
+                <Text fontStyle="italic">{sensorReading.sensorGroup}</Text>
+                <Text fontStyle="italic">{sensorReading.sensorNumber}</Text>
+                <Text fontStyle="italic">{sensorReading.time}</Text>
+                <Text fontStyle="italic">{sensorReading.value}</Text>
+                {/* <Text fontStyle="italic">{note.value}</Text>
                 {note.image && (
                   <Image
                     src={note.image}
@@ -183,7 +267,7 @@ export default function App() {
                   onClick={() => deleteNote(note)}
                 >
                   Delete note
-                </Button>
+                </Button> */}
               </Flex>
             ))}
           </Grid>

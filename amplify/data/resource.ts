@@ -9,6 +9,15 @@ const schema = a.schema({
       value: a.string(),
     })
     .authorization((allow) => [allow.owner()]),
+
+  SensorReading: a
+    .model({
+      sensorGroup: a.integer(),
+      sensorNumber: a.integer(),
+      time: a.datetime(),
+      value: a.float(),
+    })
+    .authorization((allow) => [allow.owner()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
