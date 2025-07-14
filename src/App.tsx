@@ -14,7 +14,6 @@ import {
 import { Amplify } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
 import { generateClient } from "aws-amplify/data";
-// import type { V6Client } from '@aws-amplify/api-graphql';
 import outputs from "../amplify_outputs.json";
 import type { SchemaModel } from "aws-amplify/datastore";
 /**
@@ -37,13 +36,6 @@ export default function App() {
     const { data: sensorReadings } = await client.models.SensorReading.list();
     await Promise.all(
       sensorReadings.map(async (sensorReading: any) => {
-        // if (note.image) {
-        //   const linkToStorageFile = await getUrl({
-        //     path: ({ identityId }) => `media/${identityId}/${note.image}`,
-        //   });
-        //   console.log(linkToStorageFile.url);
-        //   note.image = linkToStorageFile.url;
-        // }
         return sensorReading;
       })
     );
@@ -117,9 +109,6 @@ export default function App() {
                   type="number"
                   name="sensorGroup"
                   placeholder="Sensor Group"
-                  // label="Sensor Group"
-
-                  // variation="quiet"
                   required
                 />
               </Flex>
@@ -134,8 +123,6 @@ export default function App() {
                   type="number"
                   name="sensorNumber"
                   placeholder="Sensor Number"
-                  // label="Sensor Number"
-                  // variation="quiet"
                   required
                 />
               </Flex>
@@ -147,11 +134,9 @@ export default function App() {
               >
                 <Label htmlFor="Default">Value</Label>
                 <Input
-                  type="number"
+                  type="float"
                   name="value"
                   placeholder="Value"
-                  // label="Sensor Number"
-                  // variation="quiet"
                   required
                 />
               </Flex>
