@@ -3,28 +3,26 @@ import {
   Authenticator,
   Button,
   Text,
-  TextField,
   Heading,
   Input,
   Flex,
   Label,
   View,
-  Image,
   Grid,
   Divider,
 } from "@aws-amplify/ui-react";
 import { Amplify } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
-import { getUrl } from "aws-amplify/storage";
-import { uploadData } from "aws-amplify/storage";
 import { generateClient } from "aws-amplify/data";
+// import type { V6Client } from '@aws-amplify/api-graphql';
 import outputs from "../amplify_outputs.json";
+import type { SchemaModel } from "aws-amplify/datastore";
 /**
  * @type {import('aws-amplify/data').Client<import('../amplify/data/resource').Schema>}
  */
 
 Amplify.configure(outputs);
-const client = generateClient({
+const client: any = generateClient<SchemaModel>({
   authMode: "userPool",
 });
 
@@ -38,7 +36,7 @@ export default function App() {
   async function fetchSensorReadings() {
     const { data: sensorReadings } = await client.models.SensorReading.list();
     await Promise.all(
-      sensorReadings.map(async (sensorReading) => {
+      sensorReadings.map(async (sensorReading: any) => {
         // if (note.image) {
         //   const linkToStorageFile = await getUrl({
         //     path: ({ identityId }) => `media/${identityId}/${note.image}`,
@@ -53,18 +51,19 @@ export default function App() {
     setSensorReadings(sensorReadings);
   }
 
-  async function createSensorReading(event) {
+  async function createSensorReading(event: any) {
     event.preventDefault();
     const form = new FormData(event.target);
     console.log("Form:");
-    console.log(form.forEach((value, key, parent) => {
+    console.log(form.forEach((value, key) => {
       console.log(key, value);
     }));
 
     const { data: newSensorReading } = await client.models.SensorReading.create({
-      sensorGroup: Number.parseInt(form.get("sensorGroup")),
-      sensorNumber: Number.parseInt(form.get("sensorNumber")),
-      value: Number.parseFloat(form.get("value")),
+      // sensorGroup: Number.parseInt(form.get("sensorGroup") || "0"),
+      sensorGroup: Number.parseInt(form.get("sensorGroup")?.toString() || '0'),
+      sensorNumber: Number.parseInt(form.get("sensorNumber")?.toString() || '0'),
+      value: Number.parseFloat(form.get("value")?.toString() || '0'),
       time: new Date().toISOString(),
     });
 
@@ -74,20 +73,7 @@ export default function App() {
     event.target.reset();
   }
 
-  async function deleteNote({ id }) {
-    const toBeDeletedNote = {
-      id: id,
-    };
-
-    const { data: deletedNote } = await client.models.Note.delete(
-      toBeDeletedNote
-    );
-    console.log(deletedNote);
-
-    fetchNotes();
-  }
-
-  async function deleteSensorReading({ id }) {
+  async function deleteSensorReading({ id }: any) {
     const toBeDeletedSensorReading = {
       id: id,
     };
@@ -131,7 +117,7 @@ export default function App() {
                   type="number"
                   name="sensorGroup"
                   placeholder="Sensor Group"
-                  label="Sensor Group"
+                  // label="Sensor Group"
 
                   // variation="quiet"
                   required
@@ -148,7 +134,7 @@ export default function App() {
                   type="number"
                   name="sensorNumber"
                   placeholder="Sensor Number"
-                  label="Sensor Number"
+                  // label="Sensor Number"
                   // variation="quiet"
                   required
                 />
@@ -164,7 +150,7 @@ export default function App() {
                   type="number"
                   name="value"
                   placeholder="Value"
-                  label="Sensor Number"
+                  // label="Sensor Number"
                   // variation="quiet"
                   required
                 />
@@ -185,7 +171,7 @@ export default function App() {
             gap="2rem"
             alignContent="center"
           >
-            {sensorReadings.map((sensorReading) => (
+            {sensorReadings.map((sensorReading: any) => (
               <Flex
                 key={sensorReading.id || sensorReading.sensorNumber}
                 direction="column"
@@ -198,7 +184,9 @@ export default function App() {
                 className="box"
               >
                 <View>
-                  <Heading level="3">{sensorReading.sensorNumber}</Heading>
+                  <Heading
+                    // level="3"
+                  >{sensorReading.sensorNumber}</Heading>
                 </View>
                 <Text fontStyle="italic">{sensorReading.sensorGroup}</Text>
                 <Text fontStyle="italic">{sensorReading.sensorNumber}</Text>
@@ -206,7 +194,7 @@ export default function App() {
                 <Text fontStyle="italic">{sensorReading.value}</Text>
                 <Button
                   variation="destructive"
-                  onClick={() => deleteSensorReading(note)}
+                  onClick={() => deleteSensorReading(sensorReading)}
                 >
                   Delete Sensor Reading
                 </Button>
